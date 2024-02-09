@@ -16,12 +16,46 @@ Window {
 
     // properties
     property bool in_use: true
+    property string log: "LOG"
+    property string task_encoder_node_last_status: "NODE_INNACTIVE"
+    property string ml_model_node_last_status: "NODE_INNACTIVE"
+    property string hw_resources_node_last_status: "NODE_INNACTIVE"
+    property string co2_footprint_node_last_status: "NODE_INNACTIVE"
 
     // Main view properties
     width:  Settings.app_width
     height: Settings.app_height
     visible: true
     title:  Settings.app_name
+
+    Connections
+    {
+        target: engine
+        function onUpdate_log(new_log)
+        {
+            main_window.log = main_window.log + "\n" + new_log
+        }
+
+        function onUpdate_task_encoder_node_status(new_status)
+        {
+            main_window.task_encoder_node_last_status = new_status
+        }
+
+        function onUpdate_ml_model_node_status(new_status)
+        {
+            main_window.ml_model_node_last_status = new_status
+        }
+
+        function onUpdate_hw_resources_node_status(new_status)
+        {
+            main_window.hw_resources_node_last_status = new_status
+        }
+
+        function onUpdate_co2_footprint_node_status(new_status)
+        {
+            main_window.co2_footprint_node_last_status = new_status
+        }
+    }
 
     // Background
     Rectangle
@@ -219,20 +253,26 @@ Window {
             }
         }
 
-        // OTHER SCREEN
+        // LOG SCREEN
         Component
         {
-            id: other_screen
+            id: log_screen
 
             Rectangle{
                 color: "transparent"
-
-                SML_Text {
-                    text_value: "this screen would be used eventually"
-                    text_kind: SML_Text.Text_kind.Body
-
+                ScrollView {
+                    verticalScrollBarPolicy: Qt.ScrollBarAsNeeded
+                    horizontalScrollBarPolicy: Qt.ScrollBarAsNeeded
                     x: 50
                     y: 90
+                    width: 900
+                    height: 600
+
+                    SML_Text {
+                        id: logger
+                        text_value: main_window.log
+                        text_kind: SML_Text.Text_kind.Body
+                    }
                 }
             }
         }
@@ -290,7 +330,7 @@ Window {
     {
         x: 1000
         y: 120
-        text: "Go restuls screen, bottom-right"
+        text: "Go results screen, bottom-right"
         onClicked: {
             main_window.load_screen(Screen_manager.Screens.Results)
         }
@@ -300,9 +340,19 @@ Window {
     {
         x: 1000
         y: 160
-        text: "Go other screen, bottom-left"
+        text: "Go LOG screen, bottom-left"
         onClicked: {
-            main_window.load_screen(Screen_manager.Screens.Other)
+            main_window.load_screen(Screen_manager.Screens.Log)
+        }
+    }
+
+    Button
+    {
+        x: 1000
+        y: 240
+        text: "Send dummy task"
+        onClicked: {
+            engine.launch_task()
         }
     }
 
@@ -315,6 +365,36 @@ Window {
             Screen_manager.night_mode = !Screen_manager.night_mode
         }
     }
+
+    SML_Text {
+        x: 1000
+        y: 280
+        text_value: "Task Encoder Node Status: \n          " + main_window.task_encoder_node_last_status
+        text_kind: SML_Text.Text_kind.Body
+    }
+
+    SML_Text {
+        x: 1000
+        y: 340
+        text_value: "ML Model Node Status: \n          " + main_window.ml_model_node_last_status
+        text_kind: SML_Text.Text_kind.Body
+    }
+
+    SML_Text {
+        x: 1000
+        y: 420
+        text_value: "HW Resources Node Status: \n          " + main_window.hw_resources_node_last_status
+        text_kind: SML_Text.Text_kind.Body
+    }
+
+    SML_Text {
+        x: 1000
+        y: 500
+        text_value: "CO2 Footprint Node Status: \n          " + main_window.co2_footprint_node_last_status
+        text_kind: SML_Text.Text_kind.Body
+    }
+
+
 
 
     // Screen loader plus background animation trigger
@@ -334,8 +414,8 @@ Window {
                 case Screen_manager.Screens.Results:
                     screen_to_be_loaded = results_screen
                     break
-                case Screen_manager.Screens.Other:
-                    screen_to_be_loaded = other_screen
+                case Screen_manager.Screens.Log:
+                    screen_to_be_loaded = log_screen
                     break
                 default:
                 case Screen_manager.Screens.Home:
@@ -374,7 +454,7 @@ Window {
                 movement[0] = Settings.background_x_final
                 movement[1] = Settings.background_y_final
                 break
-            case Screen_manager.Screens.Other:
+            case Screen_manager.Screens.Log:
                 movement[0] = Settings.background_x_initial
                 movement[1] = Settings.background_y_final
                 break
